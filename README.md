@@ -178,6 +178,7 @@ Request body:
   "message_id": "unique_message_id",
   "reply_content": "This is the reply"
 }
+```
 7. OAuth Login
 ```bash
 GET /login
