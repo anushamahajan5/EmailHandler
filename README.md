@@ -49,33 +49,61 @@ The system is built using **Flask** for the backend and **React.js** for the fro
 #### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/your-repo/email-control-system.git
-cd email-control-system/backend
+cd email-control-system
 ```
 #### Step 2: Set Up a Virtual Environment
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+On Windows:
+```bash
+cd env\Scripts
+activate
 ```
 #### Step 3: Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 #### Step 4: Configure Environment Variables
-Create a .env file in the backend directory:
+In the backend directory(the directory where app.py is present), create a credentials.json file and add the credentials.json u obtain after creating a valid api:
 ```bash
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-MICROSOFT_CLIENT_ID=your_microsoft_client_id
-MICROSOFT_CLIENT_SECRET=your_microsoft_client_secret
-SECRET_KEY=your_secret_key
-SMTP_SERVER=smtp.yourmail.com
-SMTP_PORT=587
-IMAP_SERVER=imap.yourmail.com
+{
+  "web": {
+    "client_id": "your_google_client_id.apps.googleusercontent.com",
+    "project_id": "your_project_id",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_secret": "your_google_client_secret",
+    "redirect_uris": ["http://localhost:3000/auth/google/callback"],
+    "javascript_origins": ["http://localhost:3000"]
+  },
+  "microsoft": {
+    "client_id": "your_microsoft_client_id",
+    "client_secret": "your_microsoft_client_secret",
+    "redirect_uris": ["http://localhost:3000/auth/microsoft/callback"],
+    "auth_uri": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    "token_uri": "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+  },
+  "smtp": {
+    "server": "smtp.yourmail.com",
+    "port": 587,
+    "username": "your_email@example.com",
+    "password": "your_email_password"
+  },
+  "imap": {
+    "server": "imap.yourmail.com",
+    "port": 993
+  },
+  "secret_key": "your_secret_key"
+}
+
+
 ```
 
 #### Step 5: Start the Backend Server
 ```bash
-flask run
+python app.py
 ```
 The backend will run on http://localhost:5000.
 
@@ -83,7 +111,7 @@ The backend will run on http://localhost:5000.
 
 #### Step 1: Navigate to the Frontend Directory
 ```bash
-cd ../frontend
+cd email-manager
 ```
 #### Step 2: Install Dependencies
 ```bash
@@ -129,7 +157,7 @@ GET /spam/<email_id>
 GET /unspam/<email_id>
 ```
 5. Send Email
-Retrieves a list of all emails stored in the system.
+Replies to an email.
 ```bash
 POST /send
 ```
@@ -140,18 +168,9 @@ POST /send
   "subject": "Hello",
   "body": "This is a test email"
 }
-
 ```
-6. OAuth Login
-```bash
-GET /login
-```
-7.  Logout
-```bash
-GET /logout
-```
-
-Replies to an email.
+6. Compose Emails
+Sends an email.
 Request body:
 ```bash
 {
@@ -159,6 +178,15 @@ Request body:
   "message_id": "unique_message_id",
   "reply_content": "This is the reply"
 }
+7. OAuth Login
+```bash
+GET /login
+```
+8.  Logout
+```bash
+GET /logout
+```
+
 ```
 
 ## Future Enhancements
