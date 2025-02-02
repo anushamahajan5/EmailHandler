@@ -188,7 +188,6 @@ GET /login
 GET /logout
 ```
 
-```
 
 ## Future Enhancements
 🔹 AI-based spam detection
