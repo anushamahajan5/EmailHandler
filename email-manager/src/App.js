@@ -4,6 +4,7 @@ const BASE_URL = "http://localhost:5000";
 
 const App = () => {
     const [emails, setEmails] = useState([]);
+    const [selectedEmail, setSelectedEmail] = useState(null); // Store the full email details
     const [loggedIn, setLoggedIn] = useState(false);
     const [replyEmail, setReplyEmail] = useState({ recipient: "", subject: "", body: "" });
     const [showReplyBox, setShowReplyBox] = useState(false);
@@ -41,6 +42,13 @@ const App = () => {
             })
             .catch((err) => console.error("Error checking session:", err));
     }, []);
+
+    const handleEmailClick = (emailId) => {
+        fetch(`${BASE_URL}/email/${emailId}`, { credentials: "include" })
+            .then(res => res.json())
+            .then(data => setSelectedEmail(data))
+            .catch(err => console.error("Error fetching email:", err));
+    };
 
     const handleComposeEmail = () => {
         fetch(`${BASE_URL}/send`, {
@@ -141,7 +149,7 @@ const App = () => {
                     <h2>Your Inbox</h2>
                     <ul style={{ listStyleType: "none", padding: 0 }}>
                         {emails.map((email) => (
-                            <li key={email.id} style={emailStyle}>
+                            <li key={email.id} style={emailStyle} >
                                 <p><strong>Snippet:</strong> {email.snippet}</p>
                                 <p>⭐ Starred: {email.starred ? "Yes" : "No"}</p>
                                 <p>⚠️ Spam: {email.spam ? "Yes" : "No"}</p>
@@ -149,11 +157,35 @@ const App = () => {
                                 <button onClick={() => handleSpam(email.id, email.spam)} style={buttonStyle}>
                                     {email.spam ? "✅ Unspam" : "🚫 Mark as Spam"}
                                 </button>
+                                <button onClick={() => handleEmailClick(email.id)} style={buttonStyle}>📩 View</button>
 
                                 <button onClick={() => handleReply(email.sender)} style={buttonStyle}>💬 Reply</button>
                             </li>
                         ))}
                     </ul>
+
+                    {selectedEmail && (
+                        <div style={{
+                            maxWidth: "600px",
+                            margin: "20px auto",
+                            padding: "15px",
+                            background: "#fff",
+                            borderRadius: "8px",
+                            boxShadow: "0px 0px 10px rgba(0,0,0,0.1)"
+                        }}>
+                            <h3>{selectedEmail.subject}</h3>
+                            <p><strong>From:</strong> {selectedEmail.sender}</p>
+                            <p><strong>Date:</strong> {selectedEmail.date}</p>
+                            <div style={{ wordBreak: "break-word", lineHeight: "1.6" }}
+                                dangerouslySetInnerHTML={{ __html: selectedEmail.body }} />
+                            <button onClick={() => setSelectedEmail(null)}
+                                style={{ marginTop: "10px", padding: "8px 12px", cursor: "pointer" }}>
+                                Close
+                            </button>
+                        </div>
+                    )}
+
+
                 </>
             )}
 
@@ -228,6 +260,16 @@ const emailStyle = {
     margin: "10px",
     borderRadius: "5px",
     backgroundColor: "#f9f9f9",
+    textAlign: "left",
+};
+
+const emailDetailsStyle = {
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "8px",
+    boxShadow: "0px 0px 10px rgba(0,0,0,0.1)",
+    maxWidth: "600px",
+    margin: "20px auto",
     textAlign: "left",
 };
 

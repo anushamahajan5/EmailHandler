@@ -22,7 +22,7 @@ app.config['SESSION_PERMANENT'] = True
 CORS(app, supports_credentials=True, origins="*")
 
 # MongoDB Connection
-client = pymongo.MongoClient("")
+client = pymongo.MongoClient("mongodb+srv://anushamahajan5:hJYwVrEeGXcCUjF6@email.dhdf7.mongodb.net/email_control?retryWrites=true&w=majority")
 db = client["email_control"]
 emails_collection = db["emails"]
 
@@ -121,6 +121,48 @@ def inbox():
         )
 
     return jsonify(email_list)
+
+
+# Fetch Full Email by ID
+@app.route("/email/<email_id>", methods=["GET"])
+def get_email(email_id):
+    if "credentials" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    credentials = google.oauth2.credentials.Credentials(**session["credentials"])
+    service = googleapiclient.discovery.build("gmail", "v1", credentials=credentials)
+
+    try:
+        msg_data = service.users().messages().get(userId="me", id=email_id, format="full").execute()
+        
+        # Extract headers
+        headers = msg_data.get("payload", {}).get("headers", [])
+        sender = next((header["value"] for header in headers if header["name"] == "From"), "Unknown")
+        subject = next((header["value"] for header in headers if header["name"] == "Subject"), "No Subject")
+        
+        # Extract body
+        def get_email_body(payload):
+            """Extract plain text or HTML content from email payload"""
+            if "parts" in payload:
+                for part in payload["parts"]:
+                    if part["mimeType"] == "text/plain":
+                        return base64.urlsafe_b64decode(part["body"]["data"]).decode("utf-8")
+                    elif part["mimeType"] == "text/html":
+                        return base64.urlsafe_b64decode(part["body"]["data"]).decode("utf-8")
+            if "body" in payload and "data" in payload["body"]:
+                return base64.urlsafe_b64decode(payload["body"]["data"]).decode("utf-8")
+            return "No Content"
+
+        body = get_email_body(msg_data.get("payload", {}))
+
+        return jsonify({
+            "id": email_id,
+            "sender": sender,
+            "subject": subject,
+            "body": body.replace("\n", "<br>")
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # Send Email
