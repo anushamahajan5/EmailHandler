@@ -22,7 +22,7 @@ app.config['SESSION_PERMANENT'] = True
 CORS(app, supports_credentials=True, origins="*")
 
 # MongoDB Connection
-client = pymongo.MongoClient("mongodb+srv://anushamahajan5:hJYwVrEeGXcCUjF6@email.dhdf7.mongodb.net/email_control?retryWrites=true&w=majority")
+client = pymongo.MongoClient("")
 db = client["email_control"]
 emails_collection = db["emails"]
 
